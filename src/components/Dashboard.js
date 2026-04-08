@@ -32,6 +32,16 @@ export function PostoUsuario() {
     localStorage.setItem(`posto_${id}`, JSON.stringify(dadosAtualizados));
   }
 
+  // ✅ validar relatório
+  function relatorioPreenchido() {
+    return (
+      relatorio.manhaPrevencoes !== "" &&
+      relatorio.manhaAtaques !== "" &&
+      relatorio.tardePrevencoes !== "" &&
+      relatorio.tardeAtaques !== ""
+    );
+  }
+
   // 📸 ADICIONAR FOTO
   function adicionarFoto(e, tipo) {
     const file = e.target.files[0];
@@ -59,6 +69,11 @@ export function PostoUsuario() {
       }
 
       if (tipo === "checkout") {
+        if (!relatorioPreenchido()) {
+          alert("Preencha o relatório antes do checkout!");
+          return;
+        }
+
         if (checkoutFotos.length >= 3) {
           alert("Máximo 3 fotos no checkout");
           return;
@@ -97,7 +112,7 @@ export function PostoUsuario() {
       checkinFinalizado: true
     });
 
-    alert("Check-in realizado com sucesso!");
+    alert("Check-in realizado!");
   }
 
   // 📝 RELATÓRIO
@@ -129,9 +144,7 @@ export function PostoUsuario() {
       return;
     }
 
-    const r = relatorio;
-
-    if (!r.manhaPrevencoes && !r.manhaAtaques && !r.tardePrevencoes && !r.tardeAtaques) {
+    if (!relatorioPreenchido()) {
       alert("Preencha o relatório!");
       return;
     }
@@ -165,10 +178,18 @@ export function PostoUsuario() {
 
         {!checkinFinalizado ? (
           <>
+            <label htmlFor="cameraCheckin">
+              <div className="bg-blue-600 text-white p-3 rounded text-center cursor-pointer">
+                Abrir câmera (Check-in)
+              </div>
+            </label>
+
             <input
+              id="cameraCheckin"
               type="file"
               accept="image/*"
               capture="environment"
+              className="hidden"
               onChange={(e) => adicionarFoto(e, "checkin")}
             />
 
@@ -180,7 +201,7 @@ export function PostoUsuario() {
 
             <button
               onClick={realizarCheckin}
-              className="bg-blue-600 text-white p-3 rounded w-full mt-2"
+              className="bg-blue-700 text-white p-3 rounded w-full mt-2"
             >
               Finalizar Check-in
             </button>
@@ -196,41 +217,21 @@ export function PostoUsuario() {
       <div>
         <p className="font-semibold">Relatório</p>
 
-        <input
-          type="number"
-          name="manhaPrevencoes"
-          placeholder="Manhã - Prevenções"
-          value={relatorio.manhaPrevencoes}
-          onChange={handleChange}
-          className="w-full border p-2 rounded mb-1"
-        />
+        <input type="number" name="manhaPrevencoes" placeholder="Manhã - Prevenções"
+          value={relatorio.manhaPrevencoes} onChange={handleChange}
+          className="w-full border p-2 rounded mb-1" />
 
-        <input
-          type="number"
-          name="manhaAtaques"
-          placeholder="Manhã - Ataques"
-          value={relatorio.manhaAtaques}
-          onChange={handleChange}
-          className="w-full border p-2 rounded mb-1"
-        />
+        <input type="number" name="manhaAtaques" placeholder="Manhã - Ataques"
+          value={relatorio.manhaAtaques} onChange={handleChange}
+          className="w-full border p-2 rounded mb-1" />
 
-        <input
-          type="number"
-          name="tardePrevencoes"
-          placeholder="Tarde - Prevenções"
-          value={relatorio.tardePrevencoes}
-          onChange={handleChange}
-          className="w-full border p-2 rounded mb-1"
-        />
+        <input type="number" name="tardePrevencoes" placeholder="Tarde - Prevenções"
+          value={relatorio.tardePrevencoes} onChange={handleChange}
+          className="w-full border p-2 rounded mb-1" />
 
-        <input
-          type="number"
-          name="tardeAtaques"
-          placeholder="Tarde - Ataques"
-          value={relatorio.tardeAtaques}
-          onChange={handleChange}
-          className="w-full border p-2 rounded mb-2"
-        />
+        <input type="number" name="tardeAtaques" placeholder="Tarde - Ataques"
+          value={relatorio.tardeAtaques} onChange={handleChange}
+          className="w-full border p-2 rounded mb-2" />
 
         <button
           onClick={salvarRelatorio}
@@ -244,10 +245,29 @@ export function PostoUsuario() {
       <div>
         <p className="font-semibold">Checkout</p>
 
+        {!relatorioPreenchido() && (
+          <p className="text-red-500 text-sm">
+            Preencha o relatório para liberar o checkout
+          </p>
+        )}
+
+        <label htmlFor="cameraCheckout">
+          <div
+            className={`p-3 rounded text-center text-white cursor-pointer
+              ${relatorioPreenchido() ? "bg-green-600" : "bg-gray-400"}
+            `}
+          >
+            Abrir câmera (Checkout)
+          </div>
+        </label>
+
         <input
+          id="cameraCheckout"
           type="file"
           accept="image/*"
           capture="environment"
+          className="hidden"
+          disabled={!relatorioPreenchido()}
           onChange={(e) => adicionarFoto(e, "checkout")}
         />
 
@@ -259,7 +279,7 @@ export function PostoUsuario() {
 
         <button
           onClick={finalizarCheckout}
-          className="bg-green-600 text-white p-3 rounded w-full mt-2"
+          className="bg-green-700 text-white p-3 rounded w-full mt-2"
         >
           Finalizar Checkout
         </button>
